@@ -5,8 +5,8 @@ HADRON-55 Telegram Bot
 Принимает .dat файлы, фильтрует и возвращает результат
 """
 
+import asyncio
 import os
-import re
 import tempfile
 import logging
 from telegram import Update
@@ -220,17 +220,18 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             tmp.write(result)
             tmp_path = tmp.name
 
-        await update.message.reply_document(
-            document=open(tmp_path, "rb"),
-            filename=f"filtered_{doc.file_name}",
-            caption=(
-                f"✅ *Фильтрация завершена*\n\n"
-                f"📊 Всего событий: `{total}`\n"
-                f"✅ Сохранено: `{kept}`\n"
-                f"🗑 Удалено (шум): `{dropped}`"
-            ),
-            parse_mode="Markdown"
-        )
+        with open(tmp_path, "rb") as f:
+            await update.message.reply_document(
+                document=f,
+                filename=f"filtered_{doc.file_name}",
+                caption=(
+                    f"✅ *Фильтрация завершена*\n\n"
+                    f"📊 Всего событий: `{total}`\n"
+                    f"✅ Сохранено: `{kept}`\n"
+                    f"🗑 Удалено (шум): `{dropped}`"
+                ),
+                parse_mode="Markdown"
+            )
 
         os.unlink(tmp_path)
 
@@ -257,7 +258,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
     print("🤖 Бот запущен...")
-    app.run_polling()
+    asyncio.run(app.run_polling())
 
 
 if __name__ == "__main__":
