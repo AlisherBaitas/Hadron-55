@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0044)file:///C:/Users/User/Downloads/index_4.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HADRON-55 — Cosmic Ray Research Station</title>
 <style>
@@ -541,6 +541,28 @@
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
+
+  /* ── LANG SWITCHER ── */
+  .lang-switcher {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: 2rem;
+  }
+
+  .lang-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .lang-btn:hover { color: var(--white); border-color: var(--muted); }
+  .lang-btn.active { color: var(--red); border-color: var(--red); }
 </style>
 </head>
 <body>
@@ -549,22 +571,27 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">⚛ HADRON-55</a>
+  <a class="nav-logo" href="file:///C:/Users/User/Downloads/index_4.html#">⚛ HADRON-55</a>
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#pipeline">Pipeline</a></li>
-    <li><a href="#demo">Filter</a></li>
-    <li><a href="#team">Team</a></li>
+    <li><a href="file:///C:/Users/User/Downloads/index_4.html#about" data-i18n="nav_about">About</a></li>
+    <li><a href="file:///C:/Users/User/Downloads/index_4.html#pipeline" data-i18n="nav_pipeline">Pipeline</a></li>
+    <li><a href="file:///C:/Users/User/Downloads/index_4.html#demo" data-i18n="nav_filter">Filter</a></li>
+    <li><a href="file:///C:/Users/User/Downloads/index_4.html#team" data-i18n="nav_team">Team</a></li>
     <li><a href="https://github.com/CherryPicker18/Hadron-55" target="_blank">GitHub ↗</a></li>
   </ul>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang(&#39;en&#39;)">EN</button>
+    <button class="lang-btn" onclick="setLang(&#39;ru&#39;)">RU</button>
+    <button class="lang-btn" onclick="setLang(&#39;kz&#39;)">KZ</button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <p class="hero-eyebrow">Tien Shan Mountain Station · 3340m · Kazakhstan</p>
+  <p class="hero-eyebrow" data-i18n="hero_eyebrow">Tien Shan Mountain Station · 3340m · Kazakhstan</p>
   <h1>HADRON<span>-55</span></h1>
-  <p class="hero-sub">Cosmic Ray Data Processing System</p>
-  <p class="hero-desc">
+  <p class="hero-sub" data-i18n="hero_sub">Cosmic Ray Data Processing System</p>
+  <p class="hero-desc" data-i18n="hero_desc">
     Automated filtering and cleaning of particle detector events from the Hadron-55 installation. 
     Separates physical cosmic-ray signals from noise, calibration events, and empty scintillator readings.
   </p>
@@ -572,24 +599,24 @@
   <div class="hero-stats">
     <div class="stat">
       <span class="stat-val">30,000</span>
-      <span class="stat-label">m² effective area</span>
+      <span class="stat-label" data-i18n="stat_area">m² effective area</span>
     </div>
     <div class="stat">
       <span class="stat-val">3,340</span>
-      <span class="stat-label">meters altitude</span>
+      <span class="stat-label" data-i18n="stat_alt">meters altitude</span>
     </div>
     <div class="stat">
       <span class="stat-val">25</span>
-      <span class="stat-label">detector channels</span>
+      <span class="stat-label" data-i18n="stat_ch">detector channels</span>
     </div>
   </div>
 
   <div class="hero-cta">
-    <a class="btn-primary" href="#demo">▶ Run Filter</a>
-    <a class="btn-ghost" href="https://github.com/CherryPicker18/Hadron-55" target="_blank">View on GitHub</a>
+    <a class="btn-primary" href="file:///C:/Users/User/Downloads/index_4.html#demo" data-i18n="btn_run">▶ Run Filter</a>
+    <a class="btn-ghost" href="https://github.com/CherryPicker18/Hadron-55" target="_blank" data-i18n="btn_github">View on GitHub</a>
   </div>
 
-  <p class="scroll-hint">Scroll</p>
+  <p class="scroll-hint" data-i18n="scroll">Scroll</p>
 </div>
 
 <!-- ABOUT -->
@@ -690,7 +717,7 @@
     </p>
 
     <div class="demo-box">
-      <div class="demo-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="demo-upload" id="dropZone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
         <div class="demo-upload-icon">📂</div>
         <p>Drop a <span>.dat file</span> here or click to browse</p>
         <p style="margin-top:0.5rem; font-size:0.7rem;">Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
@@ -712,16 +739,16 @@
         <div class="team-avatar">AB</div>
         <div>
           <p class="team-name">Alisher Baitas</p>
-          <p class="team-role">Interface & Integration</p>
+          <p class="team-role">Interface &amp; Integration</p>
           <p class="team-desc">GUI development, pipeline integration, repository architecture. 
-          Student at Tomorrow School — peer-to-peer AI & programming school, Astana Hub.</p>
+          Student at Tomorrow School — peer-to-peer AI &amp; programming school, Astana Hub.</p>
         </div>
       </div>
       <div class="team-card">
         <div class="team-avatar">HN</div>
         <div>
           <p class="team-name">Hanni</p>
-          <p class="team-role">Signal Processing & Algorithms</p>
+          <p class="team-role">Signal Processing &amp; Algorithms</p>
           <p class="team-desc">Core filtering algorithms: outlier detection, scintillator screening, 
           event classification. Python implementation based on Hadron-55 detector physics.</p>
         </div>
@@ -891,6 +918,45 @@ dropZone.addEventListener('drop', e => {
   dropZone.style.borderColor = '';
   if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
 });
+
+// ── LANGUAGE SWITCHER ──
+const translations = {
+  en: {
+    nav_about: 'About', nav_pipeline: 'Pipeline', nav_filter: 'Filter', nav_team: 'Team',
+    hero_eyebrow: 'Tien Shan Mountain Station · 3340m · Kazakhstan',
+    hero_sub: 'Cosmic Ray Data Processing System',
+    hero_desc: 'Automated filtering and cleaning of particle detector events from the Hadron-55 installation. Separates physical cosmic-ray signals from noise, calibration events, and empty scintillator readings.',
+    stat_area: 'm² effective area', stat_alt: 'meters altitude', stat_ch: 'detector channels',
+    btn_run: '▶ Run Filter', btn_github: 'View on GitHub', scroll: 'Scroll',
+  },
+  ru: {
+    nav_about: 'О проекте', nav_pipeline: 'Алгоритм', nav_filter: 'Фильтр', nav_team: 'Команда',
+    hero_eyebrow: 'Тянь-Шаньская горная станция · 3340м · Казахстан',
+    hero_sub: 'Система обработки данных космических лучей',
+    hero_desc: 'Автоматическая фильтрация и очистка событий детектора частиц установки Hadron-55. Отделяет физические сигналы космических лучей от шумов, калибровочных событий и пустых показаний сцинтиллятора.',
+    stat_area: 'м² эффективная площадь', stat_alt: 'метров над уровнем моря', stat_ch: 'каналов детектора',
+    btn_run: '▶ Запустить фильтр', btn_github: 'Открыть на GitHub', scroll: 'Прокрутить',
+  },
+  kz: {
+    nav_about: 'Жоба туралы', nav_pipeline: 'Алгоритм', nav_filter: 'Сүзгі', nav_team: 'Команда',
+    hero_eyebrow: 'Тянь-Шань тау станциясы · 3340м · Қазақстан',
+    hero_sub: 'Ғарыш сәулелері деректерін өңдеу жүйесі',
+    hero_desc: 'Hadron-55 қондырғысының бөлшек детекторы оқиғаларын автоматты сүзу және тазалау. Физикалық ғарыштық сәуле сигналдарын шудан, калибрлеу оқиғаларынан және бос сцинтилляторлық көрсеткіштерден бөледі.',
+    stat_area: 'м² тиімді аудан', stat_alt: 'метр биіктік', stat_ch: 'детектор арнасы',
+    btn_run: '▶ Сүзгіні іске қосу', btn_github: 'GitHub-та ашу', scroll: 'Айналдыру',
+  }
+};
+
+function setLang(lang) {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  document.documentElement.lang = lang;
+}
+
 </script>
 </body>
 </html>
