@@ -622,9 +622,9 @@
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="container">
-    <p class="section-label">About the Installation</p>
-    <h2 class="section-title">What is Hadron-55?</h2>
-    <p class="section-body">
+    <p class="section-label" data-i18n="sec_about">About the Installation</p>
+    <h2 class="section-title" data-i18n="title_about">What is Hadron-55?</h2>
+    <p class="section-body" data-i18n="body_about">
       Hadron-55 is a scientific installation at the Tien Shan High-Mountain Cosmic Ray Station
       operated by the Lebedev Physical Institute. It continuously registers the flux of cosmic
       particles arriving from deep space, capturing extensive air shower (EAS) events created
@@ -634,28 +634,28 @@
     <div class="about-grid">
       <div class="about-card">
         <div class="about-card-icon">🛰️</div>
-        <h3>Scintillation Detectors</h3>
-        <p>25 channels across back, front, left, middle and right sectors — each recording particle
+        <h3 data-i18n="card1_title">Scintillation Detectors</h3>
+        <p data-i18n="card1_body">25 channels across back, front, left, middle and right sectors — each recording particle
         flux at high and low sensitivity. Raw data arrives as .dat files with timestamped event blocks.</p>
       </div>
       <div class="about-card">
         <div class="about-card-icon">🔬</div>
-        <h3>Event Structure</h3>
-        <p>Each event block starts with |EVENT: and ends with #. Inside: arrays of integer counts
+        <h3 data-i18n="card2_title">Event Structure</h3>
+        <p data-i18n="card2_body">Each event block starts with |EVENT: and ends with #. Inside: arrays of integer counts
         per detector channel. Physical events show non-zero scintillator readings — noise events show
         near-zero values across all channels.</p>
       </div>
       <div class="about-card">
         <div class="about-card-icon">⚡</div>
-        <h3>Noise Problem</h3>
-        <p>Raw data contains outlier spikes, calibration blocks, isolated single-sample noise,
+        <h3 data-i18n="card3_title">Noise Problem</h3>
+        <p data-i18n="card3_body">Raw data contains outlier spikes, calibration blocks, isolated single-sample noise,
         and empty "phantom" events. This system identifies and removes them, preserving only
         physically meaningful cosmic-ray detections.</p>
       </div>
       <div class="about-card">
         <div class="about-card-icon">📦</div>
-        <h3>Output</h3>
-        <p>Filtered .dat files with identical naming — one output file per input file.
+        <h3 data-i18n="card4_title">Output</h3>
+        <p data-i18n="card4_body">Filtered .dat files with identical naming — one output file per input file.
         Cleaned events retain their original structure; outlier values are replaced by
         context-aware interpolation.</p>
       </div>
@@ -666,9 +666,9 @@
 <!-- PIPELINE -->
 <section class="pipeline" id="pipeline">
   <div class="container">
-    <p class="section-label">Data Pipeline</p>
-    <h2 class="section-title">How filtering works</h2>
-    <p class="section-body">
+    <p class="section-label" data-i18n="sec_pipeline">Data Pipeline</p>
+    <h2 class="section-title" data-i18n="title_pipeline">How filtering works</h2>
+    <p class="section-body" data-i18n="body_pipeline">
       Four-stage processing pipeline. Each stage runs sequentially on every event block
       in every .dat file found in the input directory.
     </p>
@@ -676,31 +676,30 @@
     <div class="pipeline-steps">
       <div class="step step-active">
         <div class="step-num">01</div>
-        <h3>Parse</h3>
-        <p>Read all 6-digit .dat files. Split content into event blocks by |EVENT: / # delimiters.</p>
+        <h3 data-i18n="step1_title">Parse</h3>
+        <p data-i18n="step1_body">Read all 6-digit .dat files. Split content into event blocks by |EVENT: / # delimiters.</p>
       </div>
       <div class="step step-active">
         <div class="step-num">02</div>
-        <h3>Screen</h3>
-        <p>Drop calibration and test blocks. Check scintillator channels — discard events where ≥70% of values are zero.</p>
+        <h3 data-i18n="step2_title">Screen</h3>
+        <p data-i18n="step2_body">Drop calibration and test blocks. Check scintillator channels — discard events where ≥70% of values are zero.</p>
       </div>
       <div class="step step-active">
         <div class="step-num">03</div>
-        <h3>Clean</h3>
-        <p>Replace outlier spikes with neighbour average. Suppress isolated single-sample noise surrounded by zeros.</p>
+        <h3 data-i18n="step3_title">Clean</h3>
+        <p data-i18n="step3_body">Replace outlier spikes with neighbour average. Suppress isolated single-sample noise surrounded by zeros.</p>
       </div>
       <div class="step step-active">
         <div class="step-num">04</div>
-        <h3>Save</h3>
-        <p>Write cleaned event blocks to output directory. Filename preserved. One output file per input file.</p>
+        <h3 data-i18n="step4_title">Save</h3>
+        <p data-i18n="step4_body">Write cleaned event blocks to output directory. Filename preserved. One output file per input file.</p>
       </div>
     </div>
 
-    <!-- Signal pulse visualization -->
     <div class="pulse-wrap">
       <canvas class="pulse-canvas" id="pulseCanvas"></canvas>
     </div>
-    <p style="font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-align: center; margin-top: -1rem;">
+    <p style="font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-align: center; margin-top: -1rem;" data-i18n="signal_label">
       SIMULATED DETECTOR SIGNAL — BEFORE / AFTER FILTERING
     </p>
   </div>
@@ -709,25 +708,25 @@
 <!-- DEMO -->
 <section class="demo" id="demo">
   <div class="container">
-    <p class="section-label">Filter Demo</p>
-    <h2 class="section-title">Process your data</h2>
-    <p class="section-body">
+    <p class="section-label" data-i18n="sec_demo">Filter Demo</p>
+    <h2 class="section-title" data-i18n="title_demo">Process your data</h2>
+    <p class="section-body" data-i18n="body_demo">
       Upload a .dat file — the server will filter it and return a clean file for download.
     </p>
 
     <div class="demo-box">
       <div class="demo-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="demo-upload-icon">📂</div>
-        <p>Drop a <span>.dat file</span> here or click to browse</p>
-        <p style="margin-top:0.5rem; font-size:0.7rem;">Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
+        <p data-i18n="upload_hint">Drop a .dat file here or click to browse</p>
+        <p style="margin-top:0.5rem; font-size:0.7rem;" data-i18n="upload_note">Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
         <input type="file" id="fileInput" accept=".dat" style="display:none">
       </div>
 
       <div id="downloadBox" style="display:none; text-align:center; padding: 1rem 0;">
-        <a id="downloadLink" class="btn-primary" style="display:inline-block; text-decoration:none;">⬇ Download filtered file</a>
+        <a id="downloadLink" class="btn-primary" style="display:inline-block; text-decoration:none;" data-i18n="download_btn">⬇ Download filtered file</a>
       </div>
 
-      <div class="demo-log" id="demoLog">— Awaiting input file —</div>
+      <div class="demo-log" id="demoLog" data-i18n="log_await">— Awaiting input file —</div>
     </div>
   </div>
 </section>
@@ -735,16 +734,16 @@
 <!-- TEAM -->
 <section class="team" id="team">
   <div class="container">
-    <p class="section-label">Project</p>
-    <h2 class="section-title">Who built this</h2>
+    <p class="section-label" data-i18n="sec_team">Project</p>
+    <h2 class="section-title" data-i18n="title_team">Who built this</h2>
 
     <div class="team-grid">
       <div class="team-card">
         <div class="team-avatar">AB</div>
         <div>
           <p class="team-name">Alisher Baitas</p>
-          <p class="team-role">Interface & Integration</p>
-          <p class="team-desc">GUI development, pipeline integration, repository architecture.
+          <p class="team-role" data-i18n="role1">Interface & Integration</p>
+          <p class="team-desc" data-i18n="desc1">GUI development, pipeline integration, repository architecture.
           Student at Tomorrow School — peer-to-peer AI & programming school, Astana Hub.</p>
         </div>
       </div>
@@ -752,8 +751,8 @@
         <div class="team-avatar">HN</div>
         <div>
           <p class="team-name">Hanni</p>
-          <p class="team-role">Signal Processing & Algorithms</p>
-          <p class="team-desc">Core filtering algorithms: outlier detection, scintillator screening,
+          <p class="team-role" data-i18n="role2">Signal Processing & Algorithms</p>
+          <p class="team-desc" data-i18n="desc2">Core filtering algorithms: outlier detection, scintillator screening,
           event classification. Python implementation based on Hadron-55 detector physics.</p>
         </div>
       </div>
@@ -764,7 +763,7 @@
 <!-- FOOTER -->
 <footer>
   <span class="footer-logo">⚛ HADRON-55</span>
-  <span class="footer-copy">© 2026 Alisher Baitas · MIT License · Tien Shan, Kazakhstan</span>
+  <span class="footer-copy" data-i18n="footer_copy">© 2026 Alisher Baitas · MIT License · Tien Shan, Kazakhstan</span>
 </footer>
 
 <script>
@@ -822,7 +821,6 @@ function drawPulse() {
   const w = pc.width, h = pc.height;
   const mid = h / 2;
 
-  // Raw signal (noisy)
   pctx.beginPath();
   pctx.strokeStyle = 'rgba(107,122,153,0.4)';
   pctx.lineWidth = 1;
@@ -836,7 +834,6 @@ function drawPulse() {
   }
   pctx.stroke();
 
-  // Clean signal
   pctx.beginPath();
   pctx.strokeStyle = '#e63946';
   pctx.lineWidth = 1.5;
@@ -938,6 +935,28 @@ const translations = {
     hero_desc: 'Automated filtering and cleaning of particle detector events from the Hadron-55 installation. Separates physical cosmic-ray signals from noise, calibration events, and empty scintillator readings.',
     stat_area: 'm² effective area', stat_alt: 'meters altitude', stat_ch: 'detector channels',
     btn_run: '▶ Run Filter', btn_github: 'View on GitHub', scroll: 'Scroll',
+    sec_about: 'About the Installation', title_about: 'What is Hadron-55?',
+    body_about: 'Hadron-55 is a scientific installation at the Tien Shan High-Mountain Cosmic Ray Station operated by the Lebedev Physical Institute. It continuously registers the flux of cosmic particles arriving from deep space, capturing extensive air shower (EAS) events created by high-energy particles in the atmosphere.',
+    card1_title: 'Scintillation Detectors', card1_body: '25 channels across back, front, left, middle and right sectors — each recording particle flux at high and low sensitivity. Raw data arrives as .dat files with timestamped event blocks.',
+    card2_title: 'Event Structure', card2_body: 'Each event block starts with |EVENT: and ends with #. Inside: arrays of integer counts per detector channel. Physical events show non-zero scintillator readings — noise events show near-zero values across all channels.',
+    card3_title: 'Noise Problem', card3_body: 'Raw data contains outlier spikes, calibration blocks, isolated single-sample noise, and empty "phantom" events. This system identifies and removes them, preserving only physically meaningful cosmic-ray detections.',
+    card4_title: 'Output', card4_body: 'Filtered .dat files with identical naming — one output file per input file. Cleaned events retain their original structure; outlier values are replaced by context-aware interpolation.',
+    sec_pipeline: 'Data Pipeline', title_pipeline: 'How filtering works',
+    body_pipeline: 'Four-stage processing pipeline. Each stage runs sequentially on every event block in every .dat file found in the input directory.',
+    step1_title: 'Parse', step1_body: 'Read all 6-digit .dat files. Split content into event blocks by |EVENT: / # delimiters.',
+    step2_title: 'Screen', step2_body: 'Drop calibration and test blocks. Check scintillator channels — discard events where ≥70% of values are zero.',
+    step3_title: 'Clean', step3_body: 'Replace outlier spikes with neighbour average. Suppress isolated single-sample noise surrounded by zeros.',
+    step4_title: 'Save', step4_body: 'Write cleaned event blocks to output directory. Filename preserved. One output file per input file.',
+    signal_label: 'SIMULATED DETECTOR SIGNAL — BEFORE / AFTER FILTERING',
+    sec_demo: 'Filter Demo', title_demo: 'Process your data',
+    body_demo: 'Upload a .dat file — the server will filter it and return a clean file for download.',
+    upload_hint: 'Drop a .dat file here or click to browse',
+    upload_note: 'Files must follow 6-digit naming convention (e.g. 210516.dat)',
+    download_btn: '⬇ Download filtered file', log_await: '— Awaiting input file —',
+    sec_team: 'Project', title_team: 'Who built this',
+    role1: 'Interface & Integration', desc1: 'GUI development, pipeline integration, repository architecture. Student at Tomorrow School — peer-to-peer AI & programming school, Astana Hub.',
+    role2: 'Signal Processing & Algorithms', desc2: 'Core filtering algorithms: outlier detection, scintillator screening, event classification. Python implementation based on Hadron-55 detector physics.',
+    footer_copy: '© 2026 Alisher Baitas · MIT License · Tien Shan, Kazakhstan',
   },
   ru: {
     nav_about: 'О проекте', nav_pipeline: 'Алгоритм', nav_filter: 'Фильтр', nav_team: 'Команда',
@@ -946,6 +965,28 @@ const translations = {
     hero_desc: 'Автоматическая фильтрация и очистка событий детектора частиц установки Hadron-55. Отделяет физические сигналы космических лучей от шумов, калибровочных событий и пустых показаний сцинтиллятора.',
     stat_area: 'м² эффективная площадь', stat_alt: 'метров над уровнем моря', stat_ch: 'каналов детектора',
     btn_run: '▶ Запустить фильтр', btn_github: 'Открыть на GitHub', scroll: 'Прокрутить',
+    sec_about: 'Об установке', title_about: 'Что такое Hadron-55?',
+    body_about: 'Hadron-55 — научная установка на Тянь-Шаньской высокогорной станции космических лучей института им. Лебедева. Непрерывно регистрирует поток космических частиц из глубин космоса, фиксируя события широких атмосферных ливней (ШАЛ), создаваемых высокоэнергетическими частицами в атмосфере.',
+    card1_title: 'Сцинтилляционные детекторы', card1_body: '25 каналов в секторах back, front, left, middle и right — каждый регистрирует поток частиц с высокой и низкой чувствительностью. Сырые данные поступают в виде .dat файлов с блоками событий.',
+    card2_title: 'Структура событий', card2_body: 'Каждый блок события начинается с |EVENT: и заканчивается #. Внутри — массивы целочисленных счётов по каналам детектора. Физические события имеют ненулевые показания сцинтиллятора.',
+    card3_title: 'Проблема шумов', card3_body: 'Сырые данные содержат выбросы, калибровочные блоки, одиночные шумовые импульсы и пустые события. Система выявляет и удаляет их, сохраняя только физически значимые детектирования.',
+    card4_title: 'Результат', card4_body: 'Отфильтрованные .dat файлы с теми же именами — один выходной файл на каждый входной. Структура событий сохраняется; выбросы заменяются на контекстно-зависимую интерполяцию.',
+    sec_pipeline: 'Конвейер обработки', title_pipeline: 'Как работает фильтрация',
+    body_pipeline: 'Четырёхэтапный конвейер обработки. Каждый этап последовательно выполняется для каждого блока событий в каждом .dat файле.',
+    step1_title: 'Чтение', step1_body: 'Чтение всех 6-значных .dat файлов. Разделение на блоки событий по разделителям |EVENT: / #.',
+    step2_title: 'Проверка', step2_body: 'Удаление калибровочных и тестовых блоков. Проверка сцинтилляторных каналов — отсев событий где ≥70% значений равны нулю.',
+    step3_title: 'Очистка', step3_body: 'Замена выбросов на среднее соседних значений. Подавление одиночных шумовых импульсов окружённых нулями.',
+    step4_title: 'Сохранение', step4_body: 'Запись очищенных блоков событий в выходную директорию. Имена файлов сохраняются. Один выходной файл на каждый входной.',
+    signal_label: 'СИМУЛИРОВАННЫЙ СИГНАЛ ДЕТЕКТОРА — ДО / ПОСЛЕ ФИЛЬТРАЦИИ',
+    sec_demo: 'Демонстрация', title_demo: 'Обработайте свои данные',
+    body_demo: 'Загрузите .dat файл — сервер отфильтрует его и вернёт чистый файл для скачивания.',
+    upload_hint: 'Перетащите .dat файл сюда или нажмите для выбора',
+    upload_note: 'Файлы должны иметь 6-значные имена (например 210516.dat)',
+    download_btn: '⬇ Скачать отфильтрованный файл', log_await: '— Ожидание входного файла —',
+    sec_team: 'Проект', title_team: 'Кто создал это',
+    role1: 'Интерфейс и интеграция', desc1: 'Разработка GUI, интеграция конвейера, архитектура репозитория. Студент Tomorrow School — школы программирования в Astana Hub.',
+    role2: 'Обработка сигналов и алгоритмы', desc2: 'Основные алгоритмы фильтрации: обнаружение выбросов, проверка сцинтилляторов, классификация событий. Реализация на Python на основе физики детектора Hadron-55.',
+    footer_copy: '© 2026 Алишер Байтас · Лицензия MIT · Тянь-Шань, Казахстан',
   },
   kz: {
     nav_about: 'Жоба туралы', nav_pipeline: 'Алгоритм', nav_filter: 'Сүзгі', nav_team: 'Команда',
@@ -954,6 +995,28 @@ const translations = {
     hero_desc: 'Hadron-55 қондырғысының бөлшек детекторы оқиғаларын автоматты сүзу және тазалау. Физикалық ғарыштық сәуле сигналдарын шудан, калибрлеу оқиғаларынан және бос сцинтилляторлық көрсеткіштерден бөледі.',
     stat_area: 'м² тиімді аудан', stat_alt: 'метр биіктік', stat_ch: 'детектор арнасы',
     btn_run: '▶ Сүзгіні іске қосу', btn_github: 'GitHub-та ашу', scroll: 'Айналдыру',
+    sec_about: 'Қондырғы туралы', title_about: 'Hadron-55 дегеніміз не?',
+    body_about: 'Hadron-55 — Лебедев атындағы институттың Тянь-Шань жоғары таулы ғарыштық сәулелер станциясындағы ғылыми қондырғы. Ғарыштың тереңінен келетін ғарыштық бөлшектер ағынын үздіксіз тіркейді, атмосферадағы жоғары энергиялы бөлшектер тудыратын ауқымды атмосфералық нөсер оқиғаларын фиксациялайды.',
+    card1_title: 'Сцинтилляциялық детекторлар', card1_body: 'Back, front, left, middle және right секторларындағы 25 арна — әрқайсысы жоғары және төмен сезімталдықпен бөлшек ағынын тіркейді. Шикі деректер уақыт белгілері бар оқиға блоктары бар .dat файлдары түрінде келеді.',
+    card2_title: 'Оқиға құрылымы', card2_body: 'Әр оқиға блогы |EVENT: деп басталып # деп аяқталады. Ішінде — детектор арналары бойынша бүтін санды массивтер. Физикалық оқиғаларда сцинтиллятордың нөлдік емес көрсеткіштері болады.',
+    card3_title: 'Шу мәселесі', card3_body: 'Шикі деректерде асып кету, калибрлеу блоктары, жеке шу импульстары және бос оқиғалар бар. Жүйе оларды анықтап жояды, тек физикалық маңызды детектирлеулерді сақтайды.',
+    card4_title: 'Нәтиже', card4_body: 'Сүзілген .dat файлдары бірдей атаулармен — әр кіріс файлына бір шығыс файлы. Оқиғалар құрылымы сақталады; асып кетулер контекстке байланысты интерполяциямен ауыстырылады.',
+    sec_pipeline: 'Өңдеу конвейері', title_pipeline: 'Сүзу қалай жұмыс істейді',
+    body_pipeline: 'Төрт кезеңді өңдеу конвейері. Әр кезең кіріс каталогындағы әрбір .dat файлындағы оқиға блогы үшін дәйекті орындалады.',
+    step1_title: 'Оқу', step1_body: 'Барлық 6 цифрлы .dat файлдарын оқу. |EVENT: / # бөлгіштер бойынша оқиға блоктарына бөлу.',
+    step2_title: 'Тексеру', step2_body: 'Калибрлеу және тест блоктарын жою. Сцинтиллятор арналарын тексеру — мәндердің ≥70% нөлге тең оқиғаларды алып тастау.',
+    step3_title: 'Тазалау', step3_body: 'Асып кетулерді көрші мәндердің орташасымен ауыстыру. Нөлдермен қоршалған жеке шу импульстарын басу.',
+    step4_title: 'Сақтау', step4_body: 'Тазаланған оқиға блоктарын шығыс каталогына жазу. Файл атаулары сақталады. Әр кіріс файлына бір шығыс файлы.',
+    signal_label: 'СИМУЛЯЦИЯЛАНҒАН ДЕТЕКТОР СИГНАЛЫ — СҮЗУДЕН БҰРЫН / КЕЙІН',
+    sec_demo: 'Демонстрация', title_demo: 'Деректеріңізді өңдеңіз',
+    body_demo: '.dat файлын жүктеңіз — сервер оны сүзіп жүктеп алуға арналған таза файлды қайтарады.',
+    upload_hint: '.dat файлын осында сүйреңіз немесе таңдау үшін басыңыз',
+    upload_note: 'Файлдар 6 цифрлы атауға сәйкес болуы керек (мысалы 210516.dat)',
+    download_btn: '⬇ Сүзілген файлды жүктеу', log_await: '— Кіріс файлын күтуде —',
+    sec_team: 'Жоба', title_team: 'Кім жасады',
+    role1: 'Интерфейс және интеграция', desc1: 'GUI әзірлеу, конвейер интеграциясы, репозиторий архитектурасы. Tomorrow School студенті — Astana Hub-тағы бағдарламалау мектебі.',
+    role2: 'Сигналды өңдеу және алгоритмдер', desc2: 'Негізгі сүзу алгоритмдері: асып кетуді анықтау, сцинтилляторды тексеру, оқиғаларды жіктеу. Hadron-55 детекторының физикасына негізделген Python іске асыруы.',
+    footer_copy: '© 2026 Әлішер Байтас · MIT лицензиясы · Тянь-Шань, Қазақстан',
   }
 };
 
