@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-HADRON-55 Telegram Bot (aiogram version)
-Принимает .dat файлы, фильтрует и возвращает результат
+HADRON-55 — Telegram Bot + Flask Web API
 """
 
 import os
 import asyncio
 import tempfile
 import logging
+import threading
+from flask import Flask, request, jsonify, send_file
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, FSInputFile
 from aiogram.filters import CommandStart, Command
 
-# ── НАСТРОЙКИ ──
-TOKEN = os.environ.get("BOT_TOKEN")
 logging.basicConfig(level=logging.INFO)
 
-# ── ЛОГИКА ФИЛЬТРАЦИИ ──
+TOKEN = os.environ.get("BOT_TOKEN")
+PORT = int(os.environ.get("PORT", 8080))
+
+# ── ФИЛЬТРАЦИЯ ──
 TARGET_LABELS = [
     "back_1 : high sensitivity :", "back_2 : high sensitivity :",
     "back_3 : high sensitivity :", "back_g : high sensitivity :",
@@ -164,7 +166,67 @@ def filter_data(content: str):
     return result, len(blocks), len(kept), dropped
 
 
-# ── БОТ ──
+# ── FLASK API ──
+app = Flask(__name__)
+
+
+@app.route("/")
+def health():
+    return jsonify({"status": "ok", "service": "HADRON-55"})
+
+
+@app.route("/filter", methods=["POST"])
+def filter_endpoint():
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files["file"]
+
+    if not file.filename.endswith(".dat"):
+        return jsonify({"error": "Only .dat files accepted"}), 400
+
+    try:
+        content = file.read().decode("utf-8", errors="ignore")
+        result, total, kept, dropped = filter_data(content)
+
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".dat",
+            prefix="filtered_", delete=False, encoding="utf-8"
+        ) as tmp:
+            tmp.write(result)
+            tmp_path = tmp.name
+
+        response = send_file(
+            tmp_path,
+            as_attachment=True,
+            download_name=f"filtered_{file.filename}",
+            mimetype="text/plain"
+        )
+        response.headers["X-Total-Events"] = str(total)
+        response.headers["X-Kept-Events"] = str(kept)
+        response.headers["X-Dropped-Events"] = str(dropped)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "X-Total-Events,X-Kept-Events,X-Dropped-Events"
+        return response
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/filter", methods=["OPTIONS"])
+def filter_options():
+    response = jsonify({"ok": True})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+
+def run_flask():
+    app.run(host="0.0.0.0", port=PORT, debug=False)
+
+
+# ── TELEGRAM БОТ ──
 dp = Dispatcher()
 
 
@@ -172,11 +234,11 @@ dp = Dispatcher()
 async def start(message: Message):
     await message.answer(
         "⚛ *HADRON-55 Filter Bot*\n\n"
-        "Отправь мне `.dat` файл с данными детектора — я отфильтрую шум и верну чистые события.\n\n"
+        "Отправь мне `.dat` файл — я отфильтрую шум и верну чистые события.\n\n"
         "📋 *Что я делаю:*\n"
-        "• Удаляю пустые события (≥70% нулей в сцинтилляторах)\n"
-        "• Заменяю выбросы на среднее соседних значений\n"
-        "• Подавляю одиночные шумовые импульсы\n\n"
+        "• Удаляю пустые события (≥70% нулей)\n"
+        "• Заменяю выбросы на среднее соседних\n"
+        "• Подавляю одиночные шумы\n\n"
         "Просто пришли файл 👇",
         parse_mode="Markdown"
     )
@@ -216,7 +278,7 @@ async def handle_document(message: Message, bot: Bot):
                 f"📊 Всего событий: {total}\n"
                 f"✅ Сохранено: {kept}\n"
                 f"🗑 Удалено: {dropped}\n\n"
-                f"Все события были отфильтрованы как шум."
+                f"Все события отфильтрованы как шум."
             )
             return
 
@@ -231,9 +293,9 @@ async def handle_document(message: Message, bot: Bot):
             document=FSInputFile(tmp_path, filename=f"filtered_{doc.file_name}"),
             caption=(
                 f"✅ *Фильтрация завершена*\n\n"
-                f"📊 Всего событий: `{total}`\n"
+                f"📊 Всего: `{total}`\n"
                 f"✅ Сохранено: `{kept}`\n"
-                f"🗑 Удалено (шум): `{dropped}`"
+                f"🗑 Удалено: `{dropped}`"
             ),
             parse_mode="Markdown"
         )
@@ -241,19 +303,22 @@ async def handle_document(message: Message, bot: Bot):
         os.unlink(tmp_path)
 
     except Exception as e:
-        await message.answer(f"❌ Ошибка при обработке: {str(e)}")
+        await message.answer(f"❌ Ошибка: {str(e)}")
 
 
 @dp.message()
 async def handle_text(message: Message):
-    await message.answer(
-        "Отправь мне .dat файл — нажми на скрепку 📎 и выбери файл."
-    )
+    await message.answer("Отправь мне .dat файл — нажми на скрепку 📎")
 
 
 async def main():
     if not TOKEN:
         raise ValueError("BOT_TOKEN не задан!")
+
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    print(f"🌐 Flask запущен на порту {PORT}")
+
     bot = Bot(token=TOKEN)
     print("🤖 Бот запущен...")
     await dp.start_polling(bot)
