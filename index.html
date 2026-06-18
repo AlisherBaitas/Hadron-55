@@ -712,8 +712,7 @@
     <p class="section-label">Filter Demo</p>
     <h2 class="section-title">Process your data</h2>
     <p class="section-body">
-      Upload a .dat file to see the filtering pipeline in action.
-      The processor runs entirely in your browser — no data is sent to any server.
+      Upload a .dat file — the server will filter it and return a clean file for download.
     </p>
 
     <div class="demo-box">
@@ -723,6 +722,11 @@
         <p style="margin-top:0.5rem; font-size:0.7rem;">Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
         <input type="file" id="fileInput" accept=".dat" style="display:none">
       </div>
+
+      <div id="downloadBox" style="display:none; text-align:center; padding: 1rem 0;">
+        <a id="downloadLink" class="btn-primary" style="display:inline-block; text-decoration:none;">⬇ Download filtered file</a>
+      </div>
+
       <div class="demo-log" id="demoLog">— Awaiting input file —</div>
     </div>
   </div>
@@ -848,9 +852,12 @@ window.addEventListener('load', drawPulse);
 window.addEventListener('resize', drawPulse);
 
 // ── DEMO FILE READER ──
+const API_URL = 'https://hadron-55-production.up.railway.app/filter';
 const log = document.getElementById('demoLog');
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
+const downloadBox = document.getElementById('downloadBox');
+const downloadLink = document.getElementById('downloadLink');
 
 function logLine(text, cls) {
   const span = document.createElement('span');
@@ -860,43 +867,47 @@ function logLine(text, cls) {
   log.scrollTop = log.scrollHeight;
 }
 
-function processFile(file) {
+async function processFile(file) {
   log.innerHTML = '';
-  logLine(`→ File loaded: ${file.name} (${(file.size/1024).toFixed(1)} KB)`, 'log-info');
+  downloadBox.style.display = 'none';
+  logLine(`→ File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`, 'log-info');
+  logLine(`→ Sending to filter server...`, 'log-info');
 
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    const lines = text.split('\n');
+  const formData = new FormData();
+  formData.append('file', file);
 
-    let events = 0, inside = false, block = [];
-    let kept = 0, dropped = 0;
-
-    lines.forEach(line => {
-      if (line.startsWith('|EVENT')) { inside = true; block = [line]; }
-      else if (line.trim() === '#' && inside) {
-        block.push(line);
-        events++;
-        const scintiLines = block.filter(l => l.includes('scinti'));
-        const hasSignal = scintiLines.some(l => {
-          const nums = l.split(':').slice(2).join('').trim().split(/\s+/).map(Number).filter(n => !isNaN(n));
-          return nums.some(n => n > 10);
-        });
-        if (hasSignal) kept++; else dropped++;
-        inside = false;
-      } else if (inside) block.push(line);
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: formData
     });
 
-    logLine(`→ Total events found: ${events}`, 'log-info');
-    setTimeout(() => logLine(`→ Running scintillator screening...`, 'log-info'), 400);
-    setTimeout(() => logLine(`→ Running outlier detection...`, 'log-info'), 800);
-    setTimeout(() => {
-      logLine(`✓ Physical events kept: ${kept}`, 'log-success');
-      logLine(`✗ Noise/empty events removed: ${dropped}`, 'log-warn');
-      logLine(`✓ Processing complete. Download via desktop app.`, 'log-success');
-    }, 1400);
-  };
-  reader.readAsText(file);
+    if (!response.ok) {
+      const err = await response.json();
+      logLine(`✗ Server error: ${err.error}`, 'log-warn');
+      return;
+    }
+
+    const total = response.headers.get('X-Total-Events') || '?';
+    const kept = response.headers.get('X-Kept-Events') || '?';
+    const dropped = response.headers.get('X-Dropped-Events') || '?';
+
+    logLine(`→ Running scintillator screening...`, 'log-info');
+    logLine(`→ Running outlier detection...`, 'log-info');
+    logLine(`✓ Physical events kept: ${kept} / ${total}`, 'log-success');
+    logLine(`✗ Noise/empty events removed: ${dropped}`, 'log-warn');
+    logLine(`✓ Processing complete. Click below to download.`, 'log-success');
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    downloadLink.href = url;
+    downloadLink.download = `filtered_${file.name}`;
+    downloadBox.style.display = 'block';
+
+  } catch (err) {
+    logLine(`✗ Connection error: ${err.message}`, 'log-warn');
+    logLine(`→ Make sure the server is running.`, 'log-info');
+  }
 }
 
 fileInput.addEventListener('change', e => {
