@@ -224,3 +224,4 @@ dat-files-for-testing-output/
 tests/*.dat
 tests/*.zip
 tests/January/
+tests/
