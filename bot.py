@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-HADRON-55 Telegram Bot
+HADRON-55 Telegram Bot (aiogram version)
 Принимает .dat файлы, фильтрует и возвращает результат
 """
 
-import asyncio
 import os
+import asyncio
 import tempfile
 import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, FSInputFile
+from aiogram.filters import CommandStart, Command
 
 # ── НАСТРОЙКИ ──
-TOKEN = os.environ.get("BOT_TOKEN")  # токен из переменной окружения
-
+TOKEN = os.environ.get("BOT_TOKEN")
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # ── ЛОГИКА ФИЛЬТРАЦИИ ──
 TARGET_LABELS = [
@@ -77,12 +76,6 @@ def replace_outliers(numbers, ratio_threshold=10, absolute_threshold=1000):
     return result
 
 
-def is_mostly_small(numbers, ratio=0.9):
-    if not numbers:
-        return True
-    return sum(1 for x in numbers if 0 <= x <= 7) / len(numbers) >= ratio
-
-
 def zero_ratio(numbers):
     if not numbers:
         return 1.0
@@ -102,6 +95,12 @@ def should_drop_event(block):
     return high_zero and midi_zero
 
 
+def is_mostly_small(numbers, ratio=0.9):
+    if not numbers:
+        return True
+    return sum(1 for x in numbers if 0 <= x <= 7) / len(numbers) >= ratio
+
+
 def split_into_blocks(lines):
     blocks, current, inside = [], [], False
     for line in lines:
@@ -117,7 +116,7 @@ def split_into_blocks(lines):
     return blocks
 
 
-def filter_data(content: str) -> tuple:
+def filter_data(content: str):
     lines = content.splitlines(keepends=True)
     blocks = split_into_blocks(lines)
     kept = []
@@ -165,10 +164,13 @@ def filter_data(content: str) -> tuple:
     return result, len(blocks), len(kept), dropped
 
 
-# ── ОБРАБОТЧИКИ БОТА ──
+# ── БОТ ──
+dp = Dispatcher()
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+
+@dp.message(CommandStart())
+async def start(message: Message):
+    await message.answer(
         "⚛ *HADRON-55 Filter Bot*\n\n"
         "Отправь мне `.dat` файл с данными детектора — я отфильтрую шум и верну чистые события.\n\n"
         "📋 *Что я делаю:*\n"
@@ -180,34 +182,36 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+@dp.message(Command("help"))
+async def help_cmd(message: Message):
+    await message.answer(
         "📖 *Справка*\n\n"
         "/start — приветствие\n"
         "/help — эта справка\n\n"
-        "Отправь `.dat` файл → получи отфильтрованный файл.\n"
-        "Файлы должны быть в формате Hadron-55 с блоками |EVENT: ... #",
+        "Отправь `.dat` файл → получи отфильтрованный файл.",
         parse_mode="Markdown"
     )
 
 
-async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    doc = update.message.document
+@dp.message(F.document)
+async def handle_document(message: Message, bot: Bot):
+    doc = message.document
 
     if not doc.file_name.endswith(".dat"):
-        await update.message.reply_text("⚠️ Пожалуйста, отправь файл с расширением .dat")
+        await message.answer("⚠️ Пожалуйста, отправь файл с расширением .dat")
         return
 
-    await update.message.reply_text("⏳ Обрабатываю файл...")
+    await message.answer("⏳ Обрабатываю файл...")
 
     try:
-        file = await context.bot.get_file(doc.file_id)
-        content = (await file.download_as_bytearray()).decode("utf-8", errors="ignore")
+        file = await bot.get_file(doc.file_id)
+        content_bytes = await bot.download_file(file.file_path)
+        content = content_bytes.read().decode("utf-8", errors="ignore")
 
         result, total, kept, dropped = filter_data(content)
 
         if kept == 0:
-            await update.message.reply_text(
+            await message.answer(
                 f"ℹ️ Обработка завершена.\n\n"
                 f"📊 Всего событий: {total}\n"
                 f"✅ Сохранено: {kept}\n"
@@ -223,46 +227,37 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             tmp.write(result)
             tmp_path = tmp.name
 
-        with open(tmp_path, "rb") as f:
-            await update.message.reply_document(
-                document=f,
-                filename=f"filtered_{doc.file_name}",
-                caption=(
-                    f"✅ *Фильтрация завершена*\n\n"
-                    f"📊 Всего событий: `{total}`\n"
-                    f"✅ Сохранено: `{kept}`\n"
-                    f"🗑 Удалено (шум): `{dropped}`"
-                ),
-                parse_mode="Markdown"
-            )
+        await message.answer_document(
+            document=FSInputFile(tmp_path, filename=f"filtered_{doc.file_name}"),
+            caption=(
+                f"✅ *Фильтрация завершена*\n\n"
+                f"📊 Всего событий: `{total}`\n"
+                f"✅ Сохранено: `{kept}`\n"
+                f"🗑 Удалено (шум): `{dropped}`"
+            ),
+            parse_mode="Markdown"
+        )
 
         os.unlink(tmp_path)
 
     except Exception as e:
-        logger.error(f"Error: {e}")
-        await update.message.reply_text(f"❌ Ошибка при обработке: {str(e)}")
+        await message.answer(f"❌ Ошибка при обработке: {str(e)}")
 
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+@dp.message()
+async def handle_text(message: Message):
+    await message.answer(
         "Отправь мне .dat файл — нажми на скрепку 📎 и выбери файл."
     )
 
 
-def main():
+async def main():
     if not TOKEN:
-        raise ValueError("BOT_TOKEN не задан! Установи переменную окружения BOT_TOKEN.")
-
-    app = Application.builder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-
+        raise ValueError("BOT_TOKEN не задан!")
+    bot = Bot(token=TOKEN)
     print("🤖 Бот запущен...")
-    asyncio.run(app.run_polling())
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
