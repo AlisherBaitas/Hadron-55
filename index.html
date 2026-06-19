@@ -53,6 +53,16 @@
     background: rgba(5,8,16,0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
+    transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+  }
+
+  nav.scrolled {
+    background: rgba(5,8,16,0.6);
+  }
+
+  nav.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
   }
 
   .nav-logo {
@@ -529,8 +539,9 @@
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
+    nav { padding: 0.75rem 1.5rem; }
     .nav-links { display: none; }
+    .lang-switcher { margin-left: 0; }
     .hero, .container { padding: 0 1.5rem; }
     .about-grid, .team-grid { grid-template-columns: 1fr; }
     .pipeline-steps { grid-template-columns: 1fr 1fr; }
@@ -1033,6 +1044,32 @@ function setLang(lang) {
 
 const savedLang = localStorage.getItem('hadron55_lang') || 'en';
 setLang(savedLang);
+
+// ── NAVBAR SCROLL BEHAVIOR ──
+const navbar = document.querySelector('nav');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+  const currentScroll = window.scrollY;
+
+  if (currentScroll > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+    navbar.classList.remove('hidden');
+    return;
+  }
+
+  if (window.innerWidth <= 768) {
+    if (currentScroll > lastScroll && currentScroll > 100) {
+      navbar.classList.add('hidden');
+    } else {
+      navbar.classList.remove('hidden');
+    }
+  }
+
+  lastScroll = currentScroll;
+}, { passive: true });
 </script>
 </body>
 </html>
