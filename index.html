@@ -711,22 +711,24 @@
     <p class="section-label" data-i18n="sec_demo">Filter Demo</p>
     <h2 class="section-title" data-i18n="title_demo">Process your data</h2>
     <p class="section-body" data-i18n="body_demo">
-      Upload a .dat file — the server will filter it and return a clean file for download.
+      Upload one or multiple .dat files — the server will filter them and return a zip archive for download.
     </p>
 
     <div class="demo-box">
       <div class="demo-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="demo-upload-icon">📂</div>
-        <p data-i18n="upload_hint">Drop a .dat file here or click to browse</p>
-        <p style="margin-top:0.5rem; font-size:0.7rem;" data-i18n="upload_note">Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
-        <input type="file" id="fileInput" accept=".dat" style="display:none">
+        <p data-i18n="upload_hint">Drop .dat files here or click to browse</p>
+        <p style="margin-top:0.5rem; font-size:0.7rem;" data-i18n="upload_note">Select one or multiple files. Files must follow 6-digit naming convention (e.g. 210516.dat)</p>
+        <input type="file" id="fileInput" accept=".dat" multiple style="display:none">
       </div>
+
+      <div id="fileList" style="display:none; margin: 1rem 0;"></div>
 
       <div id="downloadBox" style="display:none; text-align:center; padding: 1rem 0;">
-        <a id="downloadLink" class="btn-primary" style="display:inline-block; text-decoration:none;" data-i18n="download_btn">⬇ Download filtered file</a>
+        <a id="downloadLink" class="btn-primary" style="display:inline-block; text-decoration:none;" data-i18n="download_btn">⬇ Download filtered files</a>
       </div>
 
-      <div class="demo-log" id="demoLog" data-i18n="log_await">— Awaiting input file —</div>
+      <div class="demo-log" id="demoLog" data-i18n="log_await">— Awaiting input files —</div>
     </div>
   </div>
 </section>
@@ -821,6 +823,7 @@ function drawPulse() {
   const w = pc.width, h = pc.height;
   const mid = h / 2;
 
+  // Raw signal (noisy)
   pctx.beginPath();
   pctx.strokeStyle = 'rgba(107,122,153,0.4)';
   pctx.lineWidth = 1;
@@ -834,6 +837,7 @@ function drawPulse() {
   }
   pctx.stroke();
 
+  // Clean signal
   pctx.beginPath();
   pctx.strokeStyle = '#e63946';
   pctx.lineWidth = 1.5;
@@ -855,6 +859,7 @@ const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const downloadBox = document.getElementById('downloadBox');
 const downloadLink = document.getElementById('downloadLink');
+const fileList = document.getElementById('fileList');
 
 function logLine(text, cls) {
   const span = document.createElement('span');
@@ -864,51 +869,108 @@ function logLine(text, cls) {
   log.scrollTop = log.scrollHeight;
 }
 
-async function processFile(file) {
+function updateFileRow(id, text, cls) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = text; el.className = cls || ''; }
+}
+
+async function processFiles(files) {
   log.innerHTML = '';
   downloadBox.style.display = 'none';
-  logLine(`→ File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`, 'log-info');
-  logLine(`→ Sending to filter server...`, 'log-info');
+  fileList.style.display = 'none';
+  fileList.innerHTML = '';
 
-  const formData = new FormData();
-  formData.append('file', file);
+  const datFiles = Array.from(files).filter(f => f.name.endsWith('.dat'));
 
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: formData
-    });
+  if (datFiles.length === 0) {
+    logLine('⚠ No .dat files selected.', 'log-warn');
+    return;
+  }
 
-    if (!response.ok) {
-      const err = await response.json();
-      logLine(`✗ Server error: ${err.error}`, 'log-warn');
+  logLine(`→ ${datFiles.length} file(s) selected. Starting batch processing...`, 'log-info');
+
+  fileList.style.display = 'block';
+  datFiles.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.id = `file-row-${i}`;
+    row.style.cssText = 'font-family: var(--mono); font-size: 0.78rem; padding: 4px 0; color: var(--muted);';
+    row.textContent = `⏳ ${f.name}`;
+    fileList.appendChild(row);
+  });
+
+  const results = [];
+  let totalKept = 0, totalDropped = 0, totalEvents = 0;
+
+  for (let i = 0; i < datFiles.length; i++) {
+    const file = datFiles[i];
+    updateFileRow(`file-row-${i}`, `⏳ Processing: ${file.name}...`, '');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(API_URL, { method: 'POST', body: formData });
+
+      if (!response.ok) {
+        updateFileRow(`file-row-${i}`, `✗ ${file.name} — server error`, 'log-warn');
+        continue;
+      }
+
+      const kept = parseInt(response.headers.get('X-Kept-Events') || '0');
+      const dropped = parseInt(response.headers.get('X-Dropped-Events') || '0');
+      const total = parseInt(response.headers.get('X-Total-Events') || '0');
+
+      totalKept += kept;
+      totalDropped += dropped;
+      totalEvents += total;
+
+      const blob = await response.blob();
+      results.push({ name: `filtered_${file.name}`, blob });
+
+      updateFileRow(`file-row-${i}`,
+        `✓ ${file.name} — kept: ${kept}/${total}, dropped: ${dropped}`,
+        'log-success'
+      );
+
+    } catch (err) {
+      updateFileRow(`file-row-${i}`, `✗ ${file.name} — ${err.message}`, 'log-warn');
+    }
+  }
+
+  logLine(`\n✓ Batch complete: ${results.length}/${datFiles.length} files processed`, 'log-success');
+  logLine(`✓ Total events kept: ${totalKept} / ${totalEvents}`, 'log-success');
+  logLine(`✗ Total removed: ${totalDropped}`, 'log-warn');
+
+  if (results.length === 0) {
+    logLine('⚠ No files were successfully processed.', 'log-warn');
+    return;
+  }
+
+  if (results.length === 1) {
+    const url = URL.createObjectURL(results[0].blob);
+    downloadLink.href = url;
+    downloadLink.download = results[0].name;
+    downloadLink.textContent = '⬇ Download filtered file';
+  } else {
+    const JSZip = window.JSZip;
+    if (!JSZip) {
+      logLine('⚠ JSZip not loaded. Please refresh.', 'log-warn');
       return;
     }
-
-    const total = response.headers.get('X-Total-Events') || '?';
-    const kept = response.headers.get('X-Kept-Events') || '?';
-    const dropped = response.headers.get('X-Dropped-Events') || '?';
-
-    logLine(`→ Running scintillator screening...`, 'log-info');
-    logLine(`→ Running outlier detection...`, 'log-info');
-    logLine(`✓ Physical events kept: ${kept} / ${total}`, 'log-success');
-    logLine(`✗ Noise/empty events removed: ${dropped}`, 'log-warn');
-    logLine(`✓ Processing complete. Click below to download.`, 'log-success');
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
+    const zip = new JSZip();
+    results.forEach(r => zip.file(r.name, r.blob));
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
     downloadLink.href = url;
-    downloadLink.download = `filtered_${file.name}`;
-    downloadBox.style.display = 'block';
-
-  } catch (err) {
-    logLine(`✗ Connection error: ${err.message}`, 'log-warn');
-    logLine(`→ Make sure the server is running.`, 'log-info');
+    downloadLink.download = 'hadron55_filtered.zip';
+    downloadLink.textContent = `⬇ Download ${results.length} filtered files (.zip)`;
   }
+
+  downloadBox.style.display = 'block';
 }
 
 fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) processFile(e.target.files[0]);
+  if (e.target.files.length > 0) processFiles(e.target.files);
 });
 
 dropZone.addEventListener('dragover', e => {
@@ -923,7 +985,7 @@ dropZone.addEventListener('dragleave', () => {
 dropZone.addEventListener('drop', e => {
   e.preventDefault();
   dropZone.style.borderColor = '';
-  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
 });
 
 // ── LANGUAGE SWITCHER ──
@@ -1029,6 +1091,8 @@ function setLang(lang) {
   document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
   document.documentElement.lang = lang;
 }
+
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
 </html>
