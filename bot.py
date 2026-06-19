@@ -5,11 +5,12 @@ HADRON-55 — Telegram Bot + Flask Web API
 """
 
 import os
+import re
 import asyncio
 import tempfile
 import logging
 import threading
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, Response
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, FSInputFile
 from aiogram.filters import CommandStart, Command
@@ -200,25 +201,19 @@ def filter_endpoint():
         content = file.read().decode("utf-8", errors="ignore")
         result, total, kept, dropped = filter_data(content)
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".dat",
-            prefix="filtered_", delete=False, encoding="utf-8"
-        ) as tmp:
-            tmp.write(result)
-            tmp_path = tmp.name
-
-        response = send_file(
-            tmp_path,
-            as_attachment=True,
-            download_name=f"filtered_{file.filename}",
-            mimetype="text/plain"
+        safe_name = re.sub(r"[^\w\-.]", "_", os.path.basename(file.filename))
+        return Response(
+            result,
+            mimetype="text/plain",
+            headers={
+                "Content-Disposition": f'attachment; filename="filtered_{safe_name}"',
+                "X-Total-Events": str(total),
+                "X-Kept-Events": str(kept),
+                "X-Dropped-Events": str(dropped),
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Expose-Headers": "X-Total-Events,X-Kept-Events,X-Dropped-Events",
+            },
         )
-        response.headers["X-Total-Events"] = str(total)
-        response.headers["X-Kept-Events"] = str(kept)
-        response.headers["X-Dropped-Events"] = str(dropped)
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Expose-Headers"] = "X-Total-Events,X-Kept-Events,X-Dropped-Events"
-        return response
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
