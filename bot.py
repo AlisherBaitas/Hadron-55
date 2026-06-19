@@ -107,14 +107,19 @@ def split_into_blocks(lines):
     blocks, current, inside = [], [], False
     for line in lines:
         if line.startswith("|EVENT"):
+            if inside and current:
+                blocks.append(current)
             inside = True
             current = [line]
         elif line.strip() == "#" and inside:
             current.append(line)
             blocks.append(current)
             inside = False
+            current = []
         elif inside:
             current.append(line)
+    if inside and current:
+        blocks.append(current)
     return blocks
 
 
@@ -168,6 +173,12 @@ def filter_data(content: str):
 
 # ── FLASK API ──
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 МБ
+
+
+@app.errorhandler(413)
+def file_too_large(_e):
+    return jsonify({"error": "Файл слишком большой. Максимум 500 МБ."}), 413
 
 
 @app.route("/")

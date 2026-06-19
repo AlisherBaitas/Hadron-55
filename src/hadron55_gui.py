@@ -10,7 +10,7 @@ import re
 import glob
 import threading
 import tkinter as tk
-from tkinter import ttk, filedialog, scrolledtext
+from tkinter import ttk, filedialog, scrolledtext, messagebox
 import numpy as np
 
 
@@ -105,14 +105,19 @@ def split_into_blocks(lines):
     blocks, current, inside = [], [], False
     for line in lines:
         if line.startswith("|EVENT"):
+            if inside and current:
+                blocks.append(current)
             inside = True
             current = [line]
         elif line.strip() == "#" and inside:
             current.append(line)
             blocks.append(current)
             inside = False
+            current = []
         elif inside:
             current.append(line)
+    if inside and current:
+        blocks.append(current)
     return blocks
 
 
@@ -179,7 +184,16 @@ class Adron55App(tk.Tk):
         self.geometry("780x580")
         self.resizable(True, True)
         self.configure(bg="#1a1a2e")
+        self._running = False
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._build_ui()
+
+    def _on_close(self):
+        if self._running:
+            if messagebox.askyesno("Подтверждение", "Идёт обработка данных. Прервать и выйти?"):
+                self.destroy()
+        else:
+            self.destroy()
 
     def _build_ui(self):
         # ── Заголовок ──
@@ -269,43 +283,72 @@ class Adron55App(tk.Tk):
         if not os.path.isdir(inp):
             self._log("❌  Входная папка не найдена.")
             return
+        if os.path.abspath(inp) == os.path.abspath(out):
+            self._log("⚠️  Входная и выходная папки совпадают! Выберите разные папки.")
+            return
 
+        check_dir = out if os.path.exists(out) else os.path.dirname(os.path.abspath(out))
+        if not os.access(check_dir, os.W_OK):
+            self._log("❌  Нет прав на запись в выходную папку.")
+            return
+
+        self._running = True
         self.run_btn.config(state="disabled")
         self.progress.start(10)
         self.status_var.set("Обработка...")
         threading.Thread(target=self._run, args=(inp, out), daemon=True).start()
 
     def _run(self, inp, out):
-        os.makedirs(out, exist_ok=True)
-        files = [f for f in os.listdir(inp)
-                 if f.endswith(".dat") and f[:-4].isdigit() and len(f[:-4]) == 6]
+        try:
+            try:
+                os.makedirs(out, exist_ok=True)
+            except PermissionError:
+                self._log("❌  Нет прав на создание выходной папки.")
+                return
 
-        if not files:
-            self._log("⚠️  .dat файлы не найдены в указанной папке.")
+            if not os.path.isdir(inp):
+                self._log("❌  Входная папка исчезла во время обработки.")
+                return
+
+            files = [f for f in os.listdir(inp)
+                     if f.endswith(".dat") and f[:-4].isdigit() and len(f[:-4]) == 6]
+
+            if not files:
+                self._log("⚠️  .dat файлы не найдены в указанной папке.")
+                return
+
+            self._log(f"\n🚀 Начало обработки. Найдено файлов: {len(files)}\n")
+
+            total_events = total_kept = total_dropped = 0
+            processed = 0
+            for fname in sorted(files):
+                inp_path = os.path.join(inp, fname)
+                out_path = os.path.join(out, fname)
+                try:
+                    ev, kept, dropped = process_file(inp_path, out_path, self._log)
+                    total_events += ev
+                    total_kept += kept
+                    total_dropped += dropped
+                    processed += 1
+                except PermissionError as err:
+                    self._log(f"  ❌  {fname}: нет прав на запись — {err}")
+                except OSError as err:
+                    self._log(f"  ❌  {fname}: ошибка файловой системы — {err}")
+
+            self._log(f"\n{'─'*50}")
+            self._log(f"✅ Готово!")
+            self._log(f"   Файлов обработано : {processed}/{len(files)}")
+            self._log(f"   Событий всего     : {total_events}")
+            self._log(f"   Сохранено         : {total_kept}")
+            self._log(f"   Удалено (мусор)   : {total_dropped}")
+            self._log(f"   Результаты в      : {out}\n")
+        except Exception as err:
+            self._log(f"❌  Критическая ошибка: {err}")
+        finally:
             self._done()
-            return
-
-        self._log(f"\n🚀 Начало обработки. Найдено файлов: {len(files)}\n")
-
-        total_events = total_kept = total_dropped = 0
-        for fname in sorted(files):
-            inp_path = os.path.join(inp, fname)
-            out_path = os.path.join(out, fname)
-            ev, kept, dropped = process_file(inp_path, out_path, self._log)
-            total_events += ev
-            total_kept += kept
-            total_dropped += dropped
-
-        self._log(f"\n{'─'*50}")
-        self._log(f"✅ Готово!")
-        self._log(f"   Файлов обработано : {len(files)}")
-        self._log(f"   Событий всего     : {total_events}")
-        self._log(f"   Сохранено         : {total_kept}")
-        self._log(f"   Удалено (мусор)   : {total_dropped}")
-        self._log(f"   Результаты в      : {out}\n")
-        self._done()
 
     def _done(self):
+        self._running = False
         self.progress.stop()
         self.run_btn.config(state="normal")
         self.status_var.set("Обработка завершена")
