@@ -8,17 +8,23 @@
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
 
   :root {
-    --black:    #050810;
-    --deep:     #0a0f1e;
-    --panel:    #0d1526;
-    --border:   #1a2540;
-    --red:      #e63946;
-    --red-dim:  #7d1d24;
-    --cyan:     #48cae4;
-    --white:    #eaf0fb;
-    --muted:    #6b7a99;
-    --mono:     'Space Mono', monospace;
-    --sans:     'Inter', sans-serif;
+    --black:      #030509;
+    --deep:       #080c18;
+    --panel:      #0c1220;
+    --border:     #1c2740;
+    --border-dim: #12192c;
+    --red:        #e63946;
+    --red-dim:    #7d1d24;
+    --red-glow:   rgba(230,57,70,0.18);
+    --cyan:       #48cae4;
+    --green:      #2dc653;
+    --white:      #eaf0fb;
+    --muted:      #6b7a99;
+    --mono:       'Space Mono', monospace;
+    --sans:       'Inter', sans-serif;
+
+    --space-1: .5rem;  --space-2: 1rem;   --space-3: 1.5rem; --space-4: 2rem;
+    --space-5: 3rem;   --space-6: 4rem;   --space-7: 6rem;   --space-8: 8rem;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,13 +39,53 @@
     overflow-x: hidden;
   }
 
-  /* ── CANVAS BACKGROUND ── */
+  /* ── FIXED BACKGROUND LAYERS ── */
   #starfield {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
   }
+
+  .bg-contour {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .bg-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+  }
+
+  /* ── CORNER-BRACKET / RETICLE MOTIF ── */
+  .bracket { position: relative; }
+  .bracket::before, .bracket::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--red);
+    border-style: solid;
+    opacity: 0.7;
+  }
+  .bracket::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+  .bracket::after   { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+  /* ── SCROLL-REVEAL UTILITY ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
 
   /* ── NAV ── */
   nav {
@@ -50,20 +96,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 3rem;
-    background: rgba(5,8,16,0.85);
+    background: rgba(3,5,9,0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
   }
 
-  nav.scrolled {
-    background: rgba(5,8,16,0.6);
-  }
+  nav.scrolled { background: rgba(3,5,9,0.6); }
 
-  nav.hidden {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
+  nav.hidden { transform: translateY(-100%); opacity: 0; }
 
   .nav-logo {
     font-family: var(--mono);
@@ -80,15 +121,28 @@
   }
 
   .nav-links a {
+    position: relative;
     font-size: 0.8rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
     text-decoration: none;
     transition: color 0.2s;
+    padding-bottom: 4px;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 0;
+    height: 1px;
+    background: var(--red);
+    transition: width 0.25s ease;
   }
 
   .nav-links a:hover { color: var(--white); }
+  .nav-links a:hover::after { width: 100%; }
 
   /* ── HERO ── */
   .hero {
@@ -96,12 +150,18 @@
     z-index: 1;
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 0 3rem;
-    max-width: 1100px;
+    align-items: center;
+    padding: 6rem 3rem 0;
+    max-width: 1200px;
     margin: 0 auto;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: var(--space-7);
+    align-items: center;
+    width: 100%;
   }
 
   .hero-eyebrow {
@@ -126,16 +186,14 @@
 
   .hero h1 {
     font-family: var(--mono);
-    font-size: clamp(3rem, 8vw, 7rem);
+    font-size: clamp(3.2rem, 8.5vw, 7.5rem);
     font-weight: 700;
-    line-height: 0.95;
-    letter-spacing: -0.02em;
+    line-height: 0.92;
+    letter-spacing: -0.03em;
     margin-bottom: 0.5rem;
   }
 
-  .hero h1 span {
-    color: var(--red);
-  }
+  .hero h1 span { color: var(--red); }
 
   .hero-sub {
     font-family: var(--mono);
@@ -153,37 +211,11 @@
     line-height: 1.8;
   }
 
-  .hero-stats {
-    display: flex;
-    gap: 3rem;
-    margin-bottom: 3rem;
-  }
-
-  .stat {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .stat-val {
-    font-family: var(--mono);
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--white);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-top: 0.3rem;
-  }
-
   .hero-cta {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    margin-bottom: 3rem;
   }
 
   .btn-primary {
@@ -198,12 +230,13 @@
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    transition: background 0.2s, transform 0.15s;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
   }
 
   .btn-primary:hover {
     background: #c1121f;
     transform: translateY(-1px);
+    box-shadow: 0 0 0 1px var(--red-glow), 0 8px 24px var(--red-glow);
   }
 
   .btn-ghost {
@@ -221,9 +254,70 @@
     transition: color 0.2s, border-color 0.2s;
   }
 
-  .btn-ghost:hover {
+  .btn-ghost:hover { color: var(--white); border-color: var(--muted); }
+
+  /* ── HERO READOUT PANEL ── */
+  .hero-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: var(--space-4);
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: var(--space-4);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    flex-shrink: 0;
+  }
+
+  .hero-panel-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .stat:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 1.9rem;
+    font-weight: 700;
     color: var(--white);
-    border-color: var(--muted);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+  }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-panel { margin-top: var(--space-5); max-width: 340px; }
   }
 
   /* ── SCROLL INDICATOR ── */
@@ -262,22 +356,22 @@
   }
 
   .section-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     font-family: var(--mono);
     font-size: 0.7rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--red);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    margin-bottom: var(--space-2);
   }
 
-  .section-label::before {
-    content: '';
-    width: 1.5rem;
-    height: 1px;
-    background: var(--red);
+  .sec-num {
+    color: var(--red-dim);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.66rem;
   }
 
   .section-title {
@@ -285,59 +379,71 @@
     font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 700;
     line-height: 1.1;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-3);
+  }
+
+  .section-ruler {
+    height: 1px;
+    background: repeating-linear-gradient(to right, var(--border) 0, var(--border) 1px, transparent 1px, transparent 10px);
+    margin-bottom: var(--space-5);
   }
 
   .section-body {
     color: var(--muted);
     max-width: 600px;
     line-height: 1.8;
-    margin-bottom: 3rem;
+    margin-bottom: var(--space-5);
   }
 
-  /* ── ABOUT ── */
-  .about {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-  }
+  /* ── ABOUT: SPEC LIST ── */
+  .about { padding: var(--space-8) 0; border-top: 1px solid var(--border); }
 
-  .about-grid {
+  .spec-list { border-top: 1px solid var(--border); }
+
+  .spec-item {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-    margin-top: 3rem;
+    grid-template-columns: 4.5rem 1fr;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--border);
+    align-items: baseline;
   }
 
-  .about-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: 2rem;
-  }
-
-  .about-card-icon {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .about-card h3 {
+  .spec-num {
     font-family: var(--mono);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    color: var(--red-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .spec-item h3 {
+    font-family: var(--mono);
+    font-size: 0.85rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
     color: var(--cyan);
   }
 
-  .about-card p {
+  .spec-item p {
     font-size: 0.9rem;
     color: var(--muted);
-    line-height: 1.7;
+    line-height: 1.75;
+    max-width: 640px;
+  }
+
+  .spec-item.reveal:nth-child(1) { transition-delay: 0.05s; }
+  .spec-item.reveal:nth-child(2) { transition-delay: 0.15s; }
+  .spec-item.reveal:nth-child(3) { transition-delay: 0.25s; }
+  .spec-item.reveal:nth-child(4) { transition-delay: 0.35s; }
+
+  @media (max-width: 600px) {
+    .spec-item { grid-template-columns: 2.5rem 1fr; }
   }
 
   /* ── PIPELINE ── */
   .pipeline {
-    padding: 8rem 0;
+    padding: var(--space-8) 0;
     background: var(--deep);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -347,12 +453,12 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
-    margin-top: 4rem;
+    margin-top: var(--space-6);
     border: 1px solid var(--border);
   }
 
   .step {
-    padding: 2rem;
+    padding: var(--space-4);
     border-right: 1px solid var(--border);
     position: relative;
   }
@@ -365,7 +471,7 @@
     font-weight: 700;
     color: var(--border);
     line-height: 1;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-2);
   }
 
   .step h3 {
@@ -377,34 +483,43 @@
     margin-bottom: 0.5rem;
   }
 
-  .step p {
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
+  .step p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
   .step-active .step-num { color: var(--red-dim); }
   .step-active { background: rgba(230,57,70,0.04); }
 
-  /* ── FILTER DEMO ── */
-  .demo {
-    padding: 8rem 0;
+  .step.reveal:nth-child(1) { transition-delay: 0.05s; }
+  .step.reveal:nth-child(2) { transition-delay: 0.15s; }
+  .step.reveal:nth-child(3) { transition-delay: 0.25s; }
+  .step.reveal:nth-child(4) { transition-delay: 0.35s; }
+
+  /* ── TOOLS / FILTER DEMO ── */
+  .demo { padding: var(--space-8) 0; }
+
+  .tool-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.7rem;
+    margin-bottom: var(--space-3);
   }
 
   .demo-box {
     background: var(--panel);
     border: 1px solid var(--border);
-    padding: 3rem;
-    margin-top: 3rem;
+    padding: var(--space-5);
   }
 
   .demo-upload {
-    border: 1px dashed var(--border);
-    padding: 3rem;
+    border: 1px solid var(--border);
+    padding: var(--space-5);
     text-align: center;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-4);
   }
 
   .demo-upload:hover {
@@ -414,7 +529,7 @@
 
   .demo-upload-icon {
     font-size: 2.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-2);
   }
 
   .demo-upload p {
@@ -424,14 +539,13 @@
     letter-spacing: 0.05em;
   }
 
-  .demo-upload span {
-    color: var(--cyan);
-  }
+  .demo-upload span { color: var(--cyan); }
 
   .demo-log {
+    position: relative;
     background: var(--black);
     border: 1px solid var(--border);
-    padding: 1.5rem;
+    padding: var(--space-3);
     font-family: var(--mono);
     font-size: 0.78rem;
     color: var(--muted);
@@ -440,13 +554,22 @@
     white-space: pre-wrap;
   }
 
-  .demo-log .log-success { color: #2dc653; }
+  .demo-log::after {
+    content: '\2588';
+    color: var(--red);
+    margin-left: 2px;
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .demo-log .log-success { color: var(--green); }
   .demo-log .log-info    { color: var(--cyan); }
   .demo-log .log-warn    { color: #f4a261; }
 
   /* ── TEAM ── */
   .team {
-    padding: 8rem 0;
+    padding: var(--space-8) 0;
     border-top: 1px solid var(--border);
     background: var(--deep);
   }
@@ -454,16 +577,16 @@
   .team-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
   }
 
   .team-card {
     background: var(--panel);
     border: 1px solid var(--border);
-    padding: 2rem;
+    padding: var(--space-4);
     display: flex;
-    gap: 1.5rem;
+    gap: var(--space-3);
     align-items: flex-start;
   }
 
@@ -482,6 +605,15 @@
     flex-shrink: 0;
   }
 
+  .member-num {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--red-dim);
+    margin-bottom: 0.4rem;
+  }
+
   .team-name {
     font-family: var(--mono);
     font-size: 0.9rem;
@@ -489,24 +621,26 @@
     margin-bottom: 0.25rem;
   }
 
-  .team-role {
-    font-size: 0.78rem;
-    color: var(--cyan);
-    margin-bottom: 0.5rem;
-  }
+  .team-role { font-size: 0.78rem; color: var(--cyan); margin-bottom: 0.5rem; }
+  .team-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
 
-  .team-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
+  .team-card.reveal:nth-child(1) { transition-delay: 0.05s; }
+  .team-card.reveal:nth-child(2) { transition-delay: 0.15s; }
 
   /* ── FOOTER ── */
   footer {
     position: relative;
     z-index: 1;
-    border-top: 1px solid var(--border);
-    padding: 3rem;
+    padding: var(--space-4) 3rem;
+  }
+
+  .footer-rule {
+    height: 1px;
+    background: repeating-linear-gradient(to right, var(--border) 0, var(--border) 1px, transparent 1px, transparent 10px);
+    margin-bottom: var(--space-4);
+  }
+
+  .footer-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -519,50 +653,44 @@
     letter-spacing: 0.15em;
   }
 
-  .footer-copy {
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
+  .footer-copy { font-size: 0.75rem; color: var(--muted); }
 
   /* ── SIGNAL PULSE (signature element) ── */
   .pulse-wrap {
-    margin: 3rem 0;
+    margin: var(--space-5) 0;
     position: relative;
     height: 80px;
     overflow: hidden;
+    border: 1px solid var(--border-dim);
   }
 
-  .pulse-canvas {
-    width: 100%;
-    height: 100%;
-  }
+  .pulse-canvas { width: 100%; height: 100%; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     nav {
       position: relative;
       padding: 0.75rem 1.5rem;
-      background: rgba(5,8,16,0.98);
+      background: rgba(3,5,9,0.98);
     }
     .nav-links { display: none; }
     .lang-switcher { margin-left: 0; }
     .hero, .container { padding: 0 1.5rem; }
-    .about-grid, .team-grid { grid-template-columns: 1fr; }
+    .hero { padding-top: 5rem; }
+    .team-grid { grid-template-columns: 1fr; }
     .pipeline-steps { grid-template-columns: 1fr 1fr; }
     .step { border-bottom: 1px solid var(--border); }
-    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    footer { padding: var(--space-4) 1.5rem; }
+    .footer-row { flex-direction: column; gap: 1rem; text-align: center; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
   }
 
   /* ── LANG SWITCHER ── */
-  .lang-switcher {
-    display: flex;
-    gap: 0.25rem;
-    margin-left: 2rem;
-  }
+  .lang-switcher { display: flex; gap: 0.25rem; margin-left: 2rem; }
 
   .lang-btn {
     font-family: var(--mono);
@@ -584,6 +712,24 @@
 
 <canvas id="starfield"></canvas>
 
+<svg class="bg-contour" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+  <g fill="none" stroke-width="1">
+    <path d="M0,560 C220,505 380,610 600,555 C820,500 980,585 1200,530 C1350,495 1480,545 1600,515" stroke="var(--border)" stroke-opacity="0.55"/>
+    <path d="M0,620 C240,570 420,660 620,615 C840,565 1020,635 1220,590 C1370,560 1490,600 1600,575" stroke="var(--border)" stroke-opacity="0.4"/>
+    <path d="M0,685 C260,640 440,715 640,675 C860,630 1040,695 1240,655 C1380,630 1500,660 1600,640" stroke="var(--border)" stroke-opacity="0.3"/>
+    <path d="M0,745 C260,705 460,770 660,735 C880,695 1060,750 1260,715 C1400,695 1510,720 1600,705" stroke="var(--border)" stroke-opacity="0.22"/>
+    <path d="M0,805 C280,770 480,825 680,795 C900,760 1080,805 1280,775 C1410,755 1520,775 1600,765" stroke="var(--border)" stroke-opacity="0.15"/>
+  </g>
+</svg>
+
+<svg class="bg-grain" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.025 0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#grain)"/>
+</svg>
+
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="#">⚛ HADRON-55</a>
@@ -603,41 +749,48 @@
 
 <!-- HERO -->
 <div class="hero">
-  <p class="hero-eyebrow" data-i18n="hero_eyebrow">Tien Shan Mountain Station · 3340m · Kazakhstan</p>
-  <h1>HADRON<span>-55</span></h1>
-  <p class="hero-sub" data-i18n="hero_sub">Cosmic Ray Data Processing System</p>
-  <p class="hero-desc" data-i18n="hero_desc">
-    Automated filtering and cleaning of particle detector events from the Hadron-55 installation.
-    Separates physical cosmic-ray signals from noise, calibration events, and empty scintillator readings.
-  </p>
+  <div class="hero-grid">
+    <div class="hero-main">
+      <p class="hero-eyebrow" data-i18n="hero_eyebrow">Tien Shan Mountain Station · 3340m · Kazakhstan</p>
+      <h1>HADRON<span>-55</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">Cosmic Ray Data Processing System</p>
+      <p class="hero-desc" data-i18n="hero_desc">
+        Automated filtering and cleaning of particle detector events from the Hadron-55 installation.
+        Separates physical cosmic-ray signals from noise, calibration events, and empty scintillator readings.
+      </p>
 
-  <div class="hero-stats">
-    <div class="stat">
-      <span class="stat-val">30,000</span>
-      <span class="stat-label" data-i18n="stat_area">m² effective area</span>
+      <div class="hero-cta">
+        <a class="btn-primary" href="#demo" data-i18n="btn_run">▶ Run Filter</a>
+        <a class="btn-ghost" href="https://github.com/AlisherBaitas/Hadron-55" target="_blank" data-i18n="btn_github">View on GitHub</a>
+      </div>
+
+      <p class="scroll-hint" data-i18n="scroll">Scroll</p>
     </div>
-    <div class="stat">
-      <span class="stat-val">3,340</span>
-      <span class="stat-label" data-i18n="stat_alt">meters altitude</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">25</span>
-      <span class="stat-label" data-i18n="stat_ch">detector channels</span>
-    </div>
+
+    <aside class="hero-panel bracket">
+      <div class="status-row"><span class="status-dot"></span>STATUS: OPERATIONAL</div>
+      <div class="hero-panel-stats">
+        <div class="stat">
+          <span class="stat-val" data-count="30000">30,000</span>
+          <span class="stat-label" data-i18n="stat_area">m² effective area</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" data-count="3340">3,340</span>
+          <span class="stat-label" data-i18n="stat_alt">meters altitude</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" data-count="25">25</span>
+          <span class="stat-label" data-i18n="stat_ch">detector channels</span>
+        </div>
+      </div>
+    </aside>
   </div>
-
-  <div class="hero-cta">
-    <a class="btn-primary" href="#demo" data-i18n="btn_run">▶ Run Filter</a>
-    <a class="btn-ghost" href="https://github.com/AlisherBaitas/Hadron-55" target="_blank" data-i18n="btn_github">View on GitHub</a>
-  </div>
-
-  <p class="scroll-hint" data-i18n="scroll">Scroll</p>
 </div>
 
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="container">
-    <p class="section-label" data-i18n="sec_about">About the Installation</p>
+    <p class="section-label"><span class="sec-num">01</span><span data-i18n="sec_about">About the Installation</span></p>
     <h2 class="section-title" data-i18n="title_about">What is Hadron-55?</h2>
     <p class="section-body" data-i18n="body_about">
       Hadron-55 is a scientific installation at the Tien Shan High-Mountain Cosmic Ray Station
@@ -646,33 +799,41 @@
       by high-energy particles in the atmosphere.
     </p>
 
-    <div class="about-grid">
-      <div class="about-card">
-        <div class="about-card-icon">🛰️</div>
-        <h3 data-i18n="card1_title">Scintillation Detectors</h3>
-        <p data-i18n="card1_body">25 channels across back, front, left, middle and right sectors — each recording particle
-        flux at high and low sensitivity. Raw data arrives as .dat files with timestamped event blocks.</p>
+    <div class="spec-list">
+      <div class="spec-item reveal">
+        <span class="spec-num">01</span>
+        <div>
+          <h3 data-i18n="card1_title">Scintillation Detectors</h3>
+          <p data-i18n="card1_body">25 channels across back, front, left, middle and right sectors — each recording particle
+          flux at high and low sensitivity. Raw data arrives as .dat files with timestamped event blocks.</p>
+        </div>
       </div>
-      <div class="about-card">
-        <div class="about-card-icon">🔬</div>
-        <h3 data-i18n="card2_title">Event Structure</h3>
-        <p data-i18n="card2_body">Each event block starts with |EVENT: and ends with #. Inside: arrays of integer counts
-        per detector channel. Physical events show non-zero scintillator readings — noise events show
-        near-zero values across all channels.</p>
+      <div class="spec-item reveal">
+        <span class="spec-num">02</span>
+        <div>
+          <h3 data-i18n="card2_title">Event Structure</h3>
+          <p data-i18n="card2_body">Each event block starts with |EVENT: and ends with #. Inside: arrays of integer counts
+          per detector channel. Physical events show non-zero scintillator readings — noise events show
+          near-zero values across all channels.</p>
+        </div>
       </div>
-      <div class="about-card">
-        <div class="about-card-icon">⚡</div>
-        <h3 data-i18n="card3_title">Noise Problem</h3>
-        <p data-i18n="card3_body">Raw data contains outlier spikes, calibration blocks, isolated single-sample noise,
-        and empty "phantom" events. This system identifies and removes them, preserving only
-        physically meaningful cosmic-ray detections.</p>
+      <div class="spec-item reveal">
+        <span class="spec-num">03</span>
+        <div>
+          <h3 data-i18n="card3_title">Noise Problem</h3>
+          <p data-i18n="card3_body">Raw data contains outlier spikes, calibration blocks, isolated single-sample noise,
+          and empty "phantom" events. This system identifies and removes them, preserving only
+          physically meaningful cosmic-ray detections.</p>
+        </div>
       </div>
-      <div class="about-card">
-        <div class="about-card-icon">📦</div>
-        <h3 data-i18n="card4_title">Output</h3>
-        <p data-i18n="card4_body">Filtered .dat files with identical naming — one output file per input file.
-        Cleaned events retain their original structure; outlier values are replaced by
-        context-aware interpolation.</p>
+      <div class="spec-item reveal">
+        <span class="spec-num">04</span>
+        <div>
+          <h3 data-i18n="card4_title">Output</h3>
+          <p data-i18n="card4_body">Filtered .dat files with identical naming — one output file per input file.
+          Cleaned events retain their original structure; outlier values are replaced by
+          context-aware interpolation.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -681,37 +842,38 @@
 <!-- PIPELINE -->
 <section class="pipeline" id="pipeline">
   <div class="container">
-    <p class="section-label" data-i18n="sec_pipeline">Data Pipeline</p>
+    <p class="section-label"><span class="sec-num">02</span><span data-i18n="sec_pipeline">Data Pipeline</span></p>
     <h2 class="section-title" data-i18n="title_pipeline">How filtering works</h2>
+    <div class="section-ruler"></div>
     <p class="section-body" data-i18n="body_pipeline">
       Four-stage processing pipeline. Each stage runs sequentially on every event block
       in every .dat file found in the input directory.
     </p>
 
     <div class="pipeline-steps">
-      <div class="step step-active">
+      <div class="step step-active reveal">
         <div class="step-num">01</div>
         <h3 data-i18n="step1_title">Parse</h3>
         <p data-i18n="step1_body">Read all 6-digit .dat files. Split content into event blocks by |EVENT: / # delimiters.</p>
       </div>
-      <div class="step step-active">
+      <div class="step step-active reveal">
         <div class="step-num">02</div>
         <h3 data-i18n="step2_title">Screen</h3>
         <p data-i18n="step2_body">Drop calibration and test blocks. Check scintillator channels — discard events where ≥70% of values are zero.</p>
       </div>
-      <div class="step step-active">
+      <div class="step step-active reveal">
         <div class="step-num">03</div>
         <h3 data-i18n="step3_title">Clean</h3>
         <p data-i18n="step3_body">Replace outlier spikes with neighbour average. Suppress isolated single-sample noise surrounded by zeros.</p>
       </div>
-      <div class="step step-active">
+      <div class="step step-active reveal">
         <div class="step-num">04</div>
         <h3 data-i18n="step4_title">Save</h3>
         <p data-i18n="step4_body">Write cleaned event blocks to output directory. Filename preserved. One output file per input file.</p>
       </div>
     </div>
 
-    <div class="pulse-wrap">
+    <div class="pulse-wrap bracket">
       <canvas class="pulse-canvas" id="pulseCanvas"></canvas>
     </div>
     <p style="font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-align: center; margin-top: -1rem;" data-i18n="signal_label">
@@ -723,13 +885,16 @@
 <!-- DEMO -->
 <section class="demo" id="demo">
   <div class="container">
-    <p class="section-label" data-i18n="sec_demo">Filter Demo</p>
+    <p class="section-label"><span class="sec-num">03</span><span data-i18n="sec_demo">Filter Demo</span></p>
     <h2 class="section-title" data-i18n="title_demo">Process your data</h2>
+    <div class="section-ruler"></div>
     <p class="section-body" data-i18n="body_demo">
       Upload a .dat file — the server will filter it and return a clean file for download.
     </p>
 
-    <div class="demo-box">
+    <div class="tool-tag">TOOL 01 / EVENT FILTER</div>
+
+    <div class="demo-box bracket reveal">
       <div class="demo-upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="demo-upload-icon">📂</div>
         <p data-i18n="upload_hint">Drop a .dat file here or click to browse</p>
@@ -749,21 +914,24 @@
 <!-- TEAM -->
 <section class="team" id="team">
   <div class="container">
-    <p class="section-label" data-i18n="sec_team">Project</p>
+    <p class="section-label"><span class="sec-num">04</span><span data-i18n="sec_team">Project</span></p>
     <h2 class="section-title" data-i18n="title_team">Who built this</h2>
+    <div class="section-ruler"></div>
 
     <div class="team-grid">
-      <div class="team-card">
+      <div class="team-card reveal">
         <div class="team-avatar">AB</div>
         <div>
+          <span class="member-num">MEMBER 01/02</span>
           <p class="team-name">Alisher Baitas</p>
           <p class="team-role" data-i18n="role1">Interface, Integration & QA</p>
           <p class="team-desc" data-i18n="desc1">GUI, Flask API, Telegram bot, deployment and repository architecture. Full QA cycle: vulnerability detection, fault tolerance, test coverage. Student at Tomorrow School, Astana Hub.</p>
         </div>
       </div>
-      <div class="team-card">
+      <div class="team-card reveal">
         <div class="team-avatar">HN</div>
         <div>
+          <span class="member-num">MEMBER 02/02</span>
           <p class="team-name">Hanni</p>
           <p class="team-role" data-i18n="role2">Signal Processing & Algorithms</p>
           <p class="team-desc" data-i18n="desc2">Core filtering algorithms: outlier detection, scintillator screening,
@@ -776,14 +944,23 @@
 
 <!-- FOOTER -->
 <footer>
-  <span class="footer-logo">⚛ HADRON-55</span>
-  <span class="footer-copy" data-i18n="footer_copy">© 2026 Alisher Baitas · MIT License · Tien Shan, Kazakhstan</span>
+  <div class="footer-rule"></div>
+  <div class="footer-row">
+    <span class="footer-logo">⚛ HADRON-55</span>
+    <span class="footer-copy" data-i18n="footer_copy">© 2026 Alisher Baitas · MIT License · Tien Shan, Kazakhstan</span>
+  </div>
 </footer>
 
 <script>
+// ── CSS TOKEN READER ──
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 // ── STARFIELD ──
 const canvas = document.getElementById('starfield');
 const ctx = canvas.getContext('2d');
+const STAR_COLOR = cssVar('--white');
 let stars = [];
 
 function resize() {
@@ -793,27 +970,29 @@ function resize() {
 
 function initStars() {
   stars = [];
-  for (let i = 0; i < 220; i++) {
+  for (let i = 0; i < 180; i++) {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 1.2 + 0.2,
-      o: Math.random() * 0.6 + 0.1,
-      speed: Math.random() * 0.15 + 0.02,
+      r: Math.random() * 1.1 + 0.2,
+      o: Math.random() * 0.5 + 0.1,
+      speed: Math.random() * 0.1 + 0.015,
       pulse: Math.random() * Math.PI * 2
     });
   }
 }
 
-function drawStars(t) {
+function drawStars() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   stars.forEach(s => {
-    s.pulse += 0.008;
-    const opacity = s.o + Math.sin(s.pulse) * 0.15;
+    s.pulse += 0.006;
+    const opacity = Math.max(s.o + Math.sin(s.pulse) * 0.15, 0);
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(200,220,255,${opacity})`;
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = STAR_COLOR;
     ctx.fill();
+    ctx.globalAlpha = 1;
     s.y -= s.speed;
     if (s.y < -2) { s.y = canvas.height + 2; s.x = Math.random() * canvas.width; }
   });
@@ -828,18 +1007,22 @@ requestAnimationFrame(drawStars);
 // ── SIGNAL PULSE VISUALIZATION ──
 const pc = document.getElementById('pulseCanvas');
 const pctx = pc.getContext('2d');
+const MUTED_COLOR = cssVar('--muted');
+const RED_COLOR = cssVar('--red');
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function drawPulse() {
+function drawPulse(phase) {
   pc.width = pc.offsetWidth;
   pc.height = pc.offsetHeight;
   const w = pc.width, h = pc.height;
   const mid = h / 2;
 
   pctx.beginPath();
-  pctx.strokeStyle = 'rgba(107,122,153,0.4)';
   pctx.lineWidth = 1;
+  pctx.strokeStyle = MUTED_COLOR;
+  pctx.globalAlpha = 0.4;
   for (let x = 0; x < w; x++) {
-    const t = x / w * Math.PI * 12;
+    const t = x / w * Math.PI * 12 + phase;
     const base = Math.sin(t) * 12;
     const noise = (Math.random() - 0.5) * 30;
     const spike = (x % 80 === 0) ? (Math.random() > 0.5 ? 40 : -40) : 0;
@@ -847,20 +1030,73 @@ function drawPulse() {
     x === 0 ? pctx.moveTo(x, y) : pctx.lineTo(x, y);
   }
   pctx.stroke();
+  pctx.globalAlpha = 1;
 
   pctx.beginPath();
-  pctx.strokeStyle = '#e63946';
   pctx.lineWidth = 1.5;
+  pctx.strokeStyle = RED_COLOR;
   for (let x = 0; x < w; x++) {
-    const t = x / w * Math.PI * 12;
+    const t = x / w * Math.PI * 12 + phase;
     const y = mid - Math.sin(t) * 12;
     x === 0 ? pctx.moveTo(x, y) : pctx.lineTo(x, y);
   }
   pctx.stroke();
 }
 
-window.addEventListener('load', drawPulse);
-window.addEventListener('resize', drawPulse);
+let pulsePhase = 0;
+window.addEventListener('load', () => drawPulse(pulsePhase));
+window.addEventListener('resize', () => drawPulse(pulsePhase));
+
+if (!prefersReducedMotion) {
+  let lastTick = 0;
+  function loopPulse(now) {
+    if (now - lastTick > 90) {
+      pulsePhase += 0.05;
+      drawPulse(pulsePhase);
+      lastTick = now;
+    }
+    requestAnimationFrame(loopPulse);
+  }
+  requestAnimationFrame(loopPulse);
+}
+
+// ── SCROLL REVEAL ──
+const revealEls = document.querySelectorAll('.reveal');
+if (revealEls.length) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+}
+
+// ── HERO STAT COUNT-UP ──
+function countUp(el) {
+  const target = parseInt(el.dataset.count, 10);
+  if (!target && target !== 0) return;
+  const duration = 1200;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * eased).toLocaleString('en-US');
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toLocaleString('en-US');
+  }
+  if (prefersReducedMotion) {
+    el.textContent = target.toLocaleString('en-US');
+  } else {
+    requestAnimationFrame(tick);
+  }
+}
+
+window.addEventListener('load', () => {
+  document.querySelectorAll('.hero-panel-stats [data-count]').forEach(countUp);
+});
 
 // ── DEMO FILE READER ──
 const API_URL = 'https://hadron-55-production.up.railway.app/filter';
