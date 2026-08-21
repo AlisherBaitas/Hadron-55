@@ -240,6 +240,13 @@ def database_years():
         if os.path.isdir(os.path.join(DATA_DIR, folder))
         and folder.isdigit()
     )
+    response = jsonify({
+        "years": years
+    })
+
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    return response
 
 @app.route("/database/files/<year>", methods=["GET"])
 def database_files(year):
@@ -267,11 +274,6 @@ def database_files(year):
         "files": files
     })
 
-    response.headers["Access-Control-Allow-Origin"] = "*"
-
-    return response    
-
-    response = jsonify({"years": years})
     response.headers["Access-Control-Allow-Origin"] = "*"
 
     return response
