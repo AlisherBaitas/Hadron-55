@@ -1106,6 +1106,23 @@ const fileInput = document.getElementById('fileInput');
 const downloadBox = document.getElementById('downloadBox');
 const downloadLink = document.getElementById('downloadLink');
 
+//  --- ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ ---
+const API_BASE = 'hadron-55-production-f7a0.up.railway.app';
+fetch(`${API_BASE}/database/years`);
+fetch(`${DATABASE_API}/database/files/${year}`);
+fetch(`${DATABASE_API}/database/filter`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        year: year,
+        files: files
+    })
+})
+
+// *************///  
+  
 function logLine(text, cls) {
   const span = document.createElement('span');
   if (cls) span.className = cls;
