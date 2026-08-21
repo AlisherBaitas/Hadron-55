@@ -19,6 +19,7 @@ logging.basicConfig(level=logging.INFO)
 
 TOKEN = os.environ.get("BOT_TOKEN")
 PORT = int(os.environ.get("PORT", 8080))
+DATA_DIR = os.environ.get("DATA_DIR", "data")
 
 # ── ФИЛЬТРАЦИЯ ──
 TARGET_LABELS = [
