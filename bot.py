@@ -227,6 +227,54 @@ def filter_options():
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return response
 
+@app.route("/database/years", methods=["GET"])
+def database_years():
+    if not os.path.isdir(DATA_DIR):
+        return jsonify({
+            "error": "Database directory not found"
+        }), 404
+
+    years = sorted(
+        folder
+        for folder in os.listdir(DATA_DIR)
+        if os.path.isdir(os.path.join(DATA_DIR, folder))
+        and folder.isdigit()
+    )
+
+@app.route("/database/files/<year>", methods=["GET"])
+def database_files(year):
+    if not year.isdigit():
+        return jsonify({
+            "error": "Invalid year"
+        }), 400
+
+    year_dir = os.path.join(DATA_DIR, year)
+
+    if not os.path.isdir(year_dir):
+        return jsonify({
+            "error": "Year not found"
+        }), 404
+
+    files = sorted(
+        filename
+        for filename in os.listdir(year_dir)
+        if filename.lower().endswith(".dat")
+    )
+
+    response = jsonify({
+        "year": year,
+        "count": len(files),
+        "files": files
+    })
+
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    return response    
+
+    response = jsonify({"years": years})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    return response
 
 def run_flask():
     app.run(host="0.0.0.0", port=PORT, debug=False)
