@@ -318,16 +318,27 @@ async def handle_text(message: Message):
 
 
 async def main():
-    if not TOKEN:
-        raise ValueError("BOT_TOKEN не задан!")
-
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread = threading.Thread(
+        target=run_flask,
+        daemon=True
+    )
     flask_thread.start()
+
     print(f"🌐 Flask запущен на порту {PORT}")
 
-    bot = Bot(token=TOKEN)
-    print("🤖 Бот запущен...")
-    await dp.start_polling(bot)
+    # Telegram-бот запускаем только если задан BOT_TOKEN
+    if TOKEN:
+        bot = Bot(token=TOKEN)
+        print("🤖 Telegram-бот запущен...")
+        await dp.start_polling(bot)
+
+    else:
+        print("ℹ️ BOT_TOKEN не задан — работает только Flask API")
+
+        # Не даём главному процессу завершиться,
+        # пока Flask работает в отдельном потоке
+        while True:
+            await asyncio.sleep(3600)
 
 
 if __name__ == "__main__":
