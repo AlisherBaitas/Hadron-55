@@ -1106,23 +1106,14 @@ const fileInput = document.getElementById('fileInput');
 const downloadBox = document.getElementById('downloadBox');
 const downloadLink = document.getElementById('downloadLink');
 
-//  --- ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ ---
-const API_BASE = 'hadron-55-production-f7a0.up.railway.app';
-fetch(`${API_BASE}/database/years`);
-fetch(`${DATABASE_API}/database/files/${year}`);
-fetch(`${DATABASE_API}/database/filter`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        year: year,
-        files: files
-    })
-})
+// TODO: "database" browsing feature (list years / files, filter by selection).
+// Backend already has GET /database/years and GET /database/files/<year>
+// (see bot.py) but no POST /database/filter route yet, and this section
+// had no UI to trigger it and referenced undefined variables (DATABASE_API,
+// year, files), which crashed the entire script on page load and broke
+// the language switcher, upload demo, and nav scroll behavior below.
+// Removed until it's wired to real UI elements and a real backend route.
 
-// *************///  
-  
 function logLine(text, cls) {
   const span = document.createElement('span');
   if (cls) span.className = cls;
